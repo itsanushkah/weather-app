@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>What’s the Weather ??</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(to bottom right, #74ebd5, #acb6e5);
+      margin: 0;
+      padding: 40px 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .main-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      color: white;
+      margin: 0;
+    }
+
+    .globe {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+
+    form {
+      background: #ffffffcc;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      max-width: 400px;
+      margin-bottom: 30px;
+    }
+
+    input,
+    button {
+      padding: 12px;
+      font-size: 1rem;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 6px;
+      border: none;
+    }
+
+    input {
+      background-color: #f2f2f2;
+    }
+
+    button {
+      background-color: #4a90e2;
+      color: white;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #357abd;
+    }
+
+    .result {
+      background: #ffffffee;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .result h2 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .result p {
+      font-size: 1rem;
+      margin: 6px 0;
+      color: #333;
+    }
+
+    .error {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+
+    .weather-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .cloud, .cloud2 {
+      position: absolute;
+      top: 15%;
+      width: 120px;
+      height: 40px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: cloudMove 40s linear infinite;
+    }
+
+    .cloud2 {
+      top: 25%;
+      width: 100px;
+      left: -150px;
+      animation-duration: 60s;
+    }
+
+    @keyframes cloudMove {
+      0% { left: -200px; }
+      100% { left: 110%; }
+    }
+
+    .rain, .snow {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .rain {
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0.3) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      animation: rainMove 0.5s linear infinite;
+    }
+
+    .snow {
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.7),
+        rgba(255, 255, 255, 0.7) 5px,
+        transparent 5px,
+        transparent 15px
+      );
+      animation: snowFall 2s linear infinite;
+    }
+
+    @keyframes rainMove {
+      from { background-position: 0 0; }
+      to { background-position: 0 10px; }
+    }
+
+    @keyframes snowFall {
+      from { background-position: 0 0; }
+      to { background-position: 0 20px; }
+    }
+  </style>
+</head>
+<body class="{{ weather.main if weather is defined and weather and not weather.error else '' }}">
+  <div class="main-wrapper">
+    <div class="title-container">
+      <h1>         What’s the Weather ??</h1>
+      <img src="{{ url_for('static', filename='Rotating_earth_animated_transparent.gif') }}" alt="Globe" class="globe" />
+    </div>
+
+    <form method="post">
+      <input type="text" name="city" placeholder="Enter city name" required />
+      <button type="submit">Get Weather</button>
+    </form>
+
+    {% if weather is defined and weather %}
+    <div class="result">
+      {% if weather.error %}
+        <div class="error">{{ weather.error }}</div>
+      {% else %}
+        <h2>📍 {{ weather.city }}</h2>
+        <p>🌤 {{ weather.desc }}</p>
+        <p>🌡️ Temperature: {{ weather.temp }}°C</p>
+        <p>🧊 Feels Like: {{ weather.feels_like }}°C</p>
+        <p>💧 Humidity: {{ weather.humidity }}%</p>
+        <p>🕒 Updated at: {{ weather.time }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="weather-animation">
+    {% if weather is defined and weather and not weather.error %}
+      {% if weather.main == 'clouds' %}
+        <div class="cloud"></div>
+        <div class="cloud cloud2"></div>
+      {% elif weather.main == 'rain' %}
+        <div class="rain"></div>
+      {% elif weather.main == 'snow' %}
+        <div class="snow"></div>
+      {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>
