@@ -1,50 +1,46 @@
 from flask import Flask, render_template, request
 import requests
-from datetime import datetime
-import os
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
-
-load_dotenv()  # Loads variables from .env file
-
-
-app = Flask(__name__)
-API_KEY = os.getenv("API_KEY")
- # Replace with your actual OpenWeatherMap API key
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    weather = None
-    if request.method == 'POST':
-        city = request.form['city']
-        base_url = 'https://api.openweathermap.org/data/2.5/weather'
-        params = {
-            'q': city,
-            'appid': API_KEY,
-            'units': 'metric'
-        }
-        response = requests.get(base_url, params=params)
-        data = response.json()
-
-        print(f"\nDEBUG: API response for {city} → {data}\n")
-
-        if response.status_code == 200:
-            weather = {
-                'city': data['name'],
-                'temp': data['main']['temp'],
-                'feels_like': data['main']['feels_like'],
-                'humidity': data['main']['humidity'],
-                'desc': data['weather'][0]['description'],
-                'icon': data['weather'][0]['icon'],
-                'main': data['weather'][0]['main'].lower(),  # <— lowercase fix
-                'time': datetime.now().strftime('%I:%M %p, %d %b %Y')
-            }
-        else:
-            weather = {'error': f"City '{city}' not found."}
-
-    return render_template('index.html', weather=weather)
-
 import os
+
+load_dotenv()
+app = Flask(__name__)
+
+API_KEY = os.getenv("WEATHER_API_KEY")  # stored in .env file
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    weather = {}
+
+    if request.method == "POST":
+        city = request.form.get("city")
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+
+        try:
+            response = requests.get(url)
+            data = response.json()
+
+            if data["cod"] != 200:
+                weather["error"] = f"City '{city}' not found."
+            else:
+                weather["city"] = data["name"]
+                weather["desc"] = data["weather"][0]["description"]
+                weather["temp"] = round(data["main"]["temp"], 2)
+                weather["feels_like"] = round(data["main"]["feels_like"], 2)
+                weather["humidity"] = data["main"]["humidity"]
+                weather["main"] = data["weather"][0]["main"].lower()
+                weather["icon"] = data["weather"][0]["icon"]
+
+                # Convert UTC timestamp to local time using city's timezone offset
+                utc_time = datetime.utcfromtimestamp(data["dt"])
+                local_time = utc_time + timedelta(seconds=data["timezone"])
+                weather["time"] = local_time.strftime("%Y-%m-%d %H:%M:%S") + " (Local Time)"
+
+        except Exception as e:
+            weather["error"] = "An error occurred. Please try again later."
+
+    return render_template("index.html", weather=weather)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-
