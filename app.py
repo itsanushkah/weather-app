@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 
 app = Flask(__name__)
-API_KEY = '0836c07d506ef273d0c60d7b0c029d1a'  # Replace with your actual OpenWeatherMap API key
+API_KEY = 'xxxxxxxxxxxxxx'  # Replace with your actual OpenWeatherMap API key
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
