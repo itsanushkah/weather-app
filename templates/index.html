@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>What’s the Weather ??</title>
+  <title>What’s the Weather?</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     * {
@@ -13,37 +13,28 @@
       font-family: 'Montserrat', sans-serif;
       background: linear-gradient(to bottom right, #74ebd5, #acb6e5);
       margin: 0;
-      padding: 40px 0;
+      padding: 0;
       min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    .main-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    .title-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
+      justify-content: flex-start;
+      padding-top: 40px;
     }
 
     h1 {
       font-size: 2.8rem;
       color: white;
-      margin: 0;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
     .globe {
       width: 50px;
       height: 50px;
-      object-fit: contain;
+      background: url("/static/Rotating_earth_animated_transparent.gif") no-repeat center/cover;
     }
 
     form {
@@ -56,7 +47,7 @@
       align-items: center;
       width: 90%;
       max-width: 400px;
-      margin-bottom: 30px;
+      margin-top: 10px;
     }
 
     input,
@@ -85,6 +76,7 @@
     }
 
     .result {
+      margin-top: 30px;
       background: #ffffffee;
       padding: 25px;
       border-radius: 12px;
@@ -143,8 +135,12 @@
     }
 
     @keyframes cloudMove {
-      0% { left: -200px; }
-      100% { left: 110%; }
+      0% {
+        left: -200px;
+      }
+      100% {
+        left: 110%;
+      }
     }
 
     .rain, .snow {
@@ -178,43 +174,49 @@
     }
 
     @keyframes rainMove {
-      from { background-position: 0 0; }
-      to { background-position: 0 10px; }
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: 0 10px;
+      }
     }
 
     @keyframes snowFall {
-      from { background-position: 0 0; }
-      to { background-position: 0 20px; }
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: 0 20px;
+      }
     }
   </style>
 </head>
 <body class="{{ weather.main if weather is defined and weather and not weather.error else '' }}">
-  <div class="main-wrapper">
-    <div class="title-container">
-      <h1>         What’s the Weather ??</h1>
-      <img src="{{ url_for('static', filename='Rotating_earth_animated_transparent.gif') }}" alt="Globe" class="globe" />
-    </div>
+  <h1>
+    What’s the Weather?
+    <div class="globe"></div>
+  </h1>
 
-    <form method="post">
-      <input type="text" name="city" placeholder="Enter city name" required />
-      <button type="submit">Get Weather</button>
-    </form>
+  <form method="post">
+    <input type="text" name="city" placeholder="Enter city name" required />
+    <button type="submit">Get Weather</button>
+  </form>
 
-    {% if weather is defined and weather %}
-    <div class="result">
-      {% if weather.error %}
-        <div class="error">{{ weather.error }}</div>
-      {% else %}
-        <h2>📍 {{ weather.city }}</h2>
-        <p>🌤 {{ weather.desc }}</p>
-        <p>🌡️ Temperature: {{ weather.temp }}°C</p>
-        <p>🧊 Feels Like: {{ weather.feels_like }}°C</p>
-        <p>💧 Humidity: {{ weather.humidity }}%</p>
-        <p>🕒 Updated at: {{ weather.time }}</p>
-      {% endif %}
-    </div>
+  {% if weather is defined and weather %}
+  <div class="result">
+    {% if weather.error %}
+      <div class="error">{{ weather.error }}</div>
+    {% else %}
+      <h2>📍 {{ weather.city }}</h2>
+      <p>🌤 {{ weather.desc }}</p>
+      <p>🌡️ Temperature: {{ weather.temp }}°C</p>
+      <p>🧊 Feels Like: {{ weather.feels_like }}°C</p>
+      <p>💧 Humidity: {{ weather.humidity }}%</p>
+      <p id="updated-time" style="margin-top: 10px;"></p>
     {% endif %}
   </div>
+  {% endif %}
 
   <div class="weather-animation">
     {% if weather is defined and weather and not weather.error %}
@@ -228,5 +230,22 @@
       {% endif %}
     {% endif %}
   </div>
+
+  <script>
+    const utcTime = "{{ weather_time_utc }}";
+    if (utcTime) {
+      const date = new Date(utcTime);
+      const localTimeStr = date.toLocaleString(undefined, {
+        timeZoneName: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+      document.getElementById('updated-time').textContent = `🕒 Updated at: ${localTimeStr}`;
+    }
+  </script>
 </body>
 </html>
