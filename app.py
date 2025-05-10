@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request
 import requests
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Loads variables from .env file
+
 
 app = Flask(__name__)
-API_KEY = 'xxxxxxxxxxxxxx'  # Replace with your actual OpenWeatherMap API key
+API_KEY = os.getenv("API_KEY")
+ # Replace with your actual OpenWeatherMap API key
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
